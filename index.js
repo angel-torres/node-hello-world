@@ -23,13 +23,25 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
         buffer += decoder.end();
 
-        var data = {
+        const chosenHandler = typeof (router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : handlers.notFound;
+
+        const data = {
             'trimmedPath': trimmedPath,
             'queryStringObject': queryStringObject,
             'method': method,
             'headers': headers,
             'payload': buffer
-        }
+        };
+
+        chosenHandler(data, (statusCode, payload) => {
+            statusCode = typeof(statusCode) == 'number' ? statusCode : 200;
+            payload = typeof(payload) == 'object' ? payload : {};
+
+            var payloadString = JSON.stringify(payload);
+
+            res.writeHead(statusCode);
+            res.end(payloadString);
+        });
 
     });
 });
@@ -39,8 +51,15 @@ server.listen(port, () => {
 });
 
 const handlers = {
-
 };
+
+handlers.users = (data, callback) => {
+    callback(200, {'name': 'users handler'})
+}
+
+handlers.notFound = (data, callback) => {
+    callback(400);
+}
 
 
 
