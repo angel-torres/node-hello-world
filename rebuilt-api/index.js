@@ -16,6 +16,9 @@ const server = http.createServer(function(req, res) {
     const headers = req.headers;
     // Parse body
 
+    // Parse query string
+    const queryStringObject = req.query;
+
     const decoder = new StringDecoder('utf-8');
 
     var buffer = '';
@@ -27,7 +30,15 @@ const server = http.createServer(function(req, res) {
     req.on('end', function() {
         buffer += decoder.end();
 
-    const chosenHandler = typeof(router[buffer]) !== 'undefined' ? router[buffer] : router.default;
+    const chosenHandler = typeof(router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : handlers.default;
+
+    const data = {
+        'trimmedPath': trimmedPath,
+        'queryStringObject': queryStringObject,
+        'method': method,
+        'headers': headers,
+        'payload': buffer
+    }
 
     chosenHandler(data, function(statusCode, payload) {
 
